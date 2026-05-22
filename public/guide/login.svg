@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 240" role="img" aria-label="ν°¤σ;b">
+  <rect width="400" height="240" rx="16" fill="#eef2f8"/>
+  <rect x="48" y="32" width="304" height="176" rx="14" fill="#fff" stroke="#e2e8f0"/>
+  <rect x="64" y="52" width="88" height="28" rx="8" fill="#0066FF"/>
+  <text x="108" y="71" text-anchor="middle" fill="#fff" font-family="system-ui,sans-serif" font-size="12" font-weight="700">ν°¤σ</text>
+  <rect x="156" y="52" width="88" height="28" rx="8" fill="#f1f5f9"/>
+  <text x="200" y="71" text-anchor="middle" fill="#5c6b82" font-family="system-ui,sans-serif" font-size="11">°></text>
+  <rect x="248" y="52" width="88" height="28" rx="8" fill="#f1f5f9"/>
+  <text x="292" y="71" text-anchor="middle" fill="#5c6b82" font-family="system-ui,sans-serif" font-size="11">Β </text>
+  <rect x="64" y="96" width="272" height="32" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="80" y="116" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="11">αόλ</text>
+  <rect x="64" y="136" width="272" height="32" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="80" y="156" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="11">ΡΉοόΙ</text>
+  <rect x="64" y="176" width="272" height="36" rx="10" fill="#0066FF"/>
+  <text x="200" y="199" text-anchor="middle" fill="#fff" font-family="system-ui,sans-serif" font-size="13" font-weight="700">ν°¤σ</text>
+</svg>

@@ -3,6 +3,7 @@ import { useAuth } from './auth/AuthContext'
 import { AppDataProvider, useAppData } from './context/AppDataContext'
 import { MenuBackButton } from './components/MenuBackButton'
 import { PunchSettingsOverlay } from './components/PunchSettingsOverlay'
+import { HelpLinkButton } from './components/HelpLinkButton'
 import { applyTheme } from './lib/theme'
 import { LoginPage } from './pages/LoginPage'
 import { ModeSelectPage } from './pages/ModeSelectPage'
@@ -10,12 +11,17 @@ import { AdminGatePage } from './pages/AdminGatePage'
 import { PunchPage } from './pages/PunchPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { AdminReportsPage } from './pages/AdminReportsPage'
+import { GuidePage } from './pages/GuidePage'
 import './App.css'
 
 type Screen = 'select' | 'punch' | 'admin-gate' | 'admin'
 type AdminTab = 'settings' | 'reports'
 
-function AppShell() {
+type AppShellProps = {
+  onOpenGuide: () => void
+}
+
+function AppShell({ onOpenGuide }: AppShellProps) {
   const auth = useAuth()
   const { loading, refreshing, profile, tenantName, settings, refresh } = useAppData()
   const [screen, setScreen] = useState<Screen>('select')
@@ -25,8 +31,6 @@ function AppShell() {
   useEffect(() => {
     applyTheme(settings)
   }, [settings.theme_primary_color, settings.theme_accent_color, settings.updated_at])
-
-  if (!auth.session) return <LoginPage />
 
   if (loading && !profile) {
     return (
@@ -47,6 +51,9 @@ function AppShell() {
           <button type="button" className="btn" onClick={() => void auth.signOut()}>
             ログアウト
           </button>
+          <div className="auth-help-wrap">
+            <HelpLinkButton onClick={onOpenGuide} />
+          </div>
         </div>
       </div>
     )
@@ -67,7 +74,7 @@ function AppShell() {
           : '管理'
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell ${screen === 'admin' ? 'has-bottom-nav' : ''}`}>
       <header className="app-header">
         <div className="header-main">
           {screen !== 'select' ? <MenuBackButton onClick={backToSelect} /> : null}
@@ -136,6 +143,10 @@ function AppShell() {
         ) : null}
       </main>
 
+      <footer className="app-help-footer">
+        <HelpLinkButton onClick={onOpenGuide} />
+      </footer>
+
       {screen === 'admin' ? (
         <nav className="bottom-nav cols-2" aria-label="管理メニュー">
           <button
@@ -168,6 +179,11 @@ function AppShell() {
 
 export default function App() {
   const auth = useAuth()
+  const [showGuide, setShowGuide] = useState(false)
+
+  if (showGuide) {
+    return <GuidePage onBack={() => setShowGuide(false)} />
+  }
 
   if (!auth.ready) {
     return (
@@ -178,16 +194,16 @@ export default function App() {
   }
 
   if (!auth.configured) {
-    return <LoginPage />
+    return <LoginPage onOpenGuide={() => setShowGuide(true)} />
   }
 
   if (!auth.session) {
-    return <LoginPage />
+    return <LoginPage onOpenGuide={() => setShowGuide(true)} />
   }
 
   return (
     <AppDataProvider>
-      <AppShell />
+      <AppShell onOpenGuide={() => setShowGuide(true)} />
     </AppDataProvider>
   )
 }

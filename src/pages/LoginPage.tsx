@@ -2,8 +2,13 @@ import { useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { joinTenant, registerNewTenant } from '../api/data'
 import { getSupabase, isSupabaseConfigured } from '../supabaseClient'
+import { HelpLinkButton } from '../components/HelpLinkButton'
 
 type Mode = 'login' | 'new' | 'join'
+
+type Props = {
+  onOpenGuide?: () => void
+}
 
 function BrandHeader() {
   return (
@@ -16,7 +21,7 @@ function BrandHeader() {
   )
 }
 
-export function LoginPage() {
+export function LoginPage({ onOpenGuide }: Props) {
   const auth = useAuth()
   const [mode, setMode] = useState<Mode>('login')
   const [email, setEmail] = useState('')
@@ -55,6 +60,11 @@ export function LoginPage() {
             DB は営業分析アプリとは別プロジェクト（rhsslssyfwwpmktlplrc）で、マイグレーション SQL
             の実行が必要です。
           </p>
+          {onOpenGuide ? (
+            <div className="auth-help-wrap">
+              <HelpLinkButton onClick={onOpenGuide} />
+            </div>
+          ) : null}
         </div>
       </div>
     )
@@ -180,6 +190,11 @@ export function LoginPage() {
         <button type="button" className="btn primary block" disabled={busy} onClick={() => void submit()}>
           {busy ? '処理中…' : mode === 'login' ? 'ログイン' : mode === 'new' ? '会社を作成して開始' : '会社に参加'}
         </button>
+        {onOpenGuide ? (
+          <div className="auth-help-wrap">
+            <HelpLinkButton onClick={onOpenGuide} />
+          </div>
+        ) : null}
       </div>
     </div>
   )
