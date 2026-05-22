@@ -31,8 +31,8 @@ export const GUIDE_SECTIONS: GuideSection[] = [
       },
     ],
     image: {
-      src: '/guide/overview.svg',
-      alt: 'Synqa の概要イメージ',
+      src: '/guide/overview.jpg',
+      alt: 'Synqa の概要画面',
       caption: '打刻と管理を、ひとつのアプリで',
     },
   },
@@ -49,8 +49,8 @@ export const GUIDE_SECTIONS: GuideSection[] = [
       },
     ],
     image: {
-      src: '/guide/login.svg',
-      alt: 'ログイン画面のイメージ',
+      src: '/guide/login.jpg',
+      alt: 'ログイン画面のスクリーンショット',
       caption: 'ログイン / 新規会社 / 参加 の3タブ',
     },
     tips: [
@@ -71,8 +71,8 @@ export const GUIDE_SECTIONS: GuideSection[] = [
       },
     ],
     image: {
-      src: '/guide/menu.svg',
-      alt: 'メニュー画面のイメージ',
+      src: '/guide/menu.jpg',
+      alt: 'メニュー画面のスクリーンショット',
       caption: '打刻モードと管理者モード',
     },
   },
@@ -89,8 +89,8 @@ export const GUIDE_SECTIONS: GuideSection[] = [
       },
     ],
     image: {
-      src: '/guide/punch.svg',
-      alt: '打刻画面のイメージ',
+      src: '/guide/punch.jpg',
+      alt: '打刻画面のスクリーンショット',
       caption: '担当選択 → 出勤 / 退勤',
     },
     tips: [
@@ -111,8 +111,8 @@ export const GUIDE_SECTIONS: GuideSection[] = [
       },
     ],
     image: {
-      src: '/guide/punch-settings.svg',
-      alt: '打刻設定のイメージ',
+      src: '/guide/punch-settings.jpg',
+      alt: '打刻設定画面のスクリーンショット',
       caption: '⚙ からユーザー管理',
     },
   },
@@ -131,7 +131,7 @@ export const GUIDE_SECTIONS: GuideSection[] = [
     image: {
       src: '/guide/admin.svg',
       alt: '管理者画面のイメージ',
-      caption: '勤務・残業 と 会社設定',
+      caption: '勤務・残業 と 会社設定（スクショ未登録の場合はイラスト表示）',
     },
     tips: [
       '打刻の手動修正は「会社設定 → 修正」タブで行います。',
@@ -151,8 +151,8 @@ export const GUIDE_SECTIONS: GuideSection[] = [
       },
     ],
     image: {
-      src: '/guide/csv.svg',
-      alt: 'CSV出力のイメージ',
+      src: '/guide/csv.jpg',
+      alt: 'CSV出力画面のスクリーンショット',
       caption: '月次合計と打刻ログが1ファイルに',
     },
   },
