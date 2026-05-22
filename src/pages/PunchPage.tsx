@@ -1,9 +1,14 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { punchIn, punchOut } from '../api/data'
 import { PunchStatusTable } from '../components/PunchStatusTable'
 import { useAppData } from '../context/AppDataContext'
-import { captureGps, formatGps, googleMapsUrl, isSecureContext } from '../lib/geo'
-import { formatClock, formatDateJa, todayIsoDate } from '../lib/dates'
+import { captureGps, isSecureContext } from '../lib/geo'
+import {
+  formatClock,
+  formatDateJaWithWeekday,
+  formatLiveClockParts,
+  todayIsoDate,
+} from '../lib/dates'
 import { workMinutes, overtimeMinutes, formatMinutesJa } from '../lib/metrics'
 
 export function PunchPage() {
@@ -11,6 +16,14 @@ export function PunchPage() {
   const today = todayIsoDate()
   const [employeeId, setEmployeeId] = useState(profile?.employee_id ?? employees[0]?.id ?? '')
   const [busy, setBusy] = useState(false)
+  const [now, setNow] = useState(() => new Date())
+
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(new Date()), 1000)
+    return () => window.clearInterval(id)
+  }, [])
+
+  const clock = formatLiveClockParts(now)
 
   const openRecord = useMemo(
     () =>
@@ -32,6 +45,7 @@ export function PunchPage() {
   )
 
   const onDuty = Boolean(openRecord)
+  const doneToday = Boolean(todayRecord?.clock_out_at)
 
   const punchInHandler = async () => {
     if (!employeeId) {
@@ -83,15 +97,35 @@ export function PunchPage() {
     }
   }
 
+  const statusLine = doneToday
+    ? `本日の勤務は終了しました（出勤 ${formatClock(todayRecord!.clock_in_at)} / 退勤 ${formatClock(todayRecord!.clock_out_at)}）`
+    : onDuty
+      ? `勤務中 — 出勤 ${formatClock(todayRecord?.clock_in_at ?? openRecord?.clock_in_at ?? null)}`
+      : null
+
+  const summaryLine =
+    doneToday && todayRecord
+      ? `実働 ${formatMinutesJa(workMinutes(todayRecord, settings.break_windows))}${
+          overtimeMinutes(
+            todayRecord,
+            settings.break_windows,
+            settings.standard_work_minutes_per_day,
+          ) > 0
+            ? ` / 残業 ${formatMinutesJa(
+                overtimeMinutes(
+                  todayRecord,
+                  settings.break_windows,
+                  settings.standard_work_minutes_per_day,
+                ),
+              )}`
+            : ''
+        }`
+      : null
+
   return (
-    <div className="page-stack">
-      <section className="panel punch-panel">
-        <h2 className="section-title">打刻</h2>
-        <p className="hint">{formatDateJa(today)}</p>
-        {!isSecureContext() ? (
-          <p className="warn">位置情報のため HTTPS でアクセスしてください。</p>
-        ) : null}
-        <label className="field">
+    <div className="page-stack punch-page">
+      <section className="panel punch-user-bar">
+        <label className="field punch-user-field">
           <span>打刻する担当</span>
           <select
             className="input"
@@ -106,74 +140,47 @@ export function PunchPage() {
             ))}
           </select>
         </label>
-        <p className={`status-pill ${onDuty ? 'on' : 'off'}`}>
-          {onDuty ? '勤務中' : todayRecord?.clock_out_at ? '本日退勤済み' : '未出勤'}
-        </p>
-        <dl className="time-dl">
-          <div>
-            <dt>出勤</dt>
-            <dd>{todayRecord ? formatClock(todayRecord.clock_in_at) : '—'}</dd>
-          </div>
-          <div>
-            <dt>退勤</dt>
-            <dd>
-              {todayRecord?.clock_out_at
-                ? formatClock(todayRecord.clock_out_at)
-                : onDuty
-                  ? '未退勤'
-                  : '—'}
-            </dd>
-          </div>
-        </dl>
-        {todayRecord?.clock_out_at ? (
-          <p className="hint">
-            実働 {formatMinutesJa(workMinutes(todayRecord, settings.break_windows))}
-            {overtimeMinutes(
-              todayRecord,
-              settings.break_windows,
-              settings.standard_work_minutes_per_day,
-            ) > 0
-              ? ` / 残業 ${formatMinutesJa(
-                  overtimeMinutes(
-                    todayRecord,
-                    settings.break_windows,
-                    settings.standard_work_minutes_per_day,
-                  ),
-                )}`
-              : ''}
-          </p>
+      </section>
+
+      <section className="punch-simple" aria-label="打刻">
+        {!isSecureContext() ? (
+          <p className="warn punch-simple-warn">位置情報のため HTTPS でアクセスしてください</p>
         ) : null}
-        {todayRecord ? (
-          <p className="hint gps-line">
-            出勤位置:{' '}
-            <a
-              href={googleMapsUrl(todayRecord.clock_in_lat, todayRecord.clock_in_lng)}
-              target="_blank"
-              rel="noreferrer"
-            >
-              {formatGps(todayRecord.clock_in_lat, todayRecord.clock_in_lng)}
-            </a>
-          </p>
-        ) : null}
-        <div className="punch-actions">
-          <button
-            type="button"
-            className="btn primary punch-in large"
-            disabled={busy || onDuty || !!todayRecord?.clock_out_at || !employeeId}
-            onClick={() => void punchInHandler()}
-          >
-            {busy ? '取得中…' : '出勤'}
-          </button>
-          <button
-            type="button"
-            className="btn large"
-            disabled={busy || !onDuty}
-            onClick={() => void punchOutHandler()}
-          >
-            {busy ? '取得中…' : '退勤'}
-          </button>
+
+        <img
+          className="punch-simple-logo"
+          src="/icons/icon-192.png"
+          alt="Synqa"
+          width={72}
+          height={72}
+        />
+        <p className="punch-simple-brand">Synqa</p>
+        <p className="punch-simple-date">{formatDateJaWithWeekday(today)}</p>
+
+        <div className="punch-simple-clock" aria-live="polite">
+          <span className="punch-clock-hm">
+            {clock.h}:{clock.m}
+          </span>
+          <span className="punch-clock-sec">:{clock.s}</span>
         </div>
-        <p className="hint small">休憩は会社設定に従い自動控除されます。</p>
+
+        {statusLine ? <p className="punch-simple-status">{statusLine}</p> : null}
+        {summaryLine ? <p className="punch-simple-summary">{summaryLine}</p> : null}
+
+        {doneToday ? (
+          <div className="punch-round-btn done" aria-disabled>
+            退勤済み
+          </div>
+        ) : (
+          <button
+            type="button"
+            className={`punch-round-btn ${onDuty ? 'is-out' : 'is-in'}`}
+            disabled={busy || !employeeId}
+            onClick={() => void (onDuty ? punchOutHandler() : punchInHandler())}
+          >
+            {busy ? '取得中…' : onDuty ? '退勤' : '出勤'}
+          </button>
+        )}
       </section>
 
       <PunchStatusTable employees={employees} records={records} workDate={today} />
