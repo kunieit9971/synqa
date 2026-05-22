@@ -74,6 +74,119 @@ body {
   flex-shrink: 0;
 }
 
+.header-actions.with-settings {
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.4rem;
+}
+
+.header-actions-row {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.btn-gear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.35rem;
+  height: 2.35rem;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.15s;
+}
+
+.btn-gear:hover,
+.btn-gear.active {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.btn-gear-icon {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+.punch-settings-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.punch-settings-backdrop {
+  position: absolute;
+  inset: 0;
+  border: none;
+  background: rgba(11, 18, 32, 0.45);
+  cursor: pointer;
+}
+
+.punch-settings-sheet {
+  position: relative;
+  z-index: 1;
+  margin-top: auto;
+  width: 100%;
+  max-height: 88dvh;
+  overflow: auto;
+  background: var(--bg);
+  border-radius: var(--radius) var(--radius) 0 0;
+  box-shadow: var(--shadow-lg);
+  padding: 0 0 1.25rem;
+  animation: sheet-up 0.22s ease-out;
+}
+
+@keyframes sheet-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0.6;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.punch-settings-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 1rem 1rem 0.5rem;
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 2;
+  border-bottom: 1px solid var(--border);
+}
+
+.punch-settings-head h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.punch-settings-head .btn.ghost {
+  color: var(--text);
+  border-color: var(--border);
+  background: var(--surface);
+}
+
+.punch-settings-stack {
+  padding: 0 1rem;
+}
+
+.punch-settings-toast {
+  margin: 0 1rem;
+}
+
 .header-actions .btn.ghost {
   color: #fff;
   border-color: rgba(255, 255, 255, 0.35);

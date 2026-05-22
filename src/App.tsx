@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useAuth } from './auth/AuthContext'
 import { AppDataProvider, useAppData } from './context/AppDataContext'
 import { MenuBackButton } from './components/MenuBackButton'
+import { PunchSettingsOverlay } from './components/PunchSettingsOverlay'
 import { applyTheme } from './lib/theme'
 import { LoginPage } from './pages/LoginPage'
 import { ModeSelectPage } from './pages/ModeSelectPage'
@@ -19,6 +20,7 @@ function AppShell() {
   const { loading, refreshing, profile, tenantName, settings, refresh } = useAppData()
   const [screen, setScreen] = useState<Screen>('select')
   const [adminTab, setAdminTab] = useState<AdminTab>('reports')
+  const [punchSettingsOpen, setPunchSettingsOpen] = useState(false)
 
   useEffect(() => {
     applyTheme(settings)
@@ -50,7 +52,10 @@ function AppShell() {
     )
   }
 
-  const backToSelect = () => setScreen('select')
+  const backToSelect = () => {
+    setPunchSettingsOpen(false)
+    setScreen('select')
+  }
 
   const headerTitle =
     screen === 'select'
@@ -72,29 +77,51 @@ function AppShell() {
           </h1>
           <p className="app-sub">{profile.display_name}</p>
         </div>
-        <div className="header-actions">
-          <button
-            type="button"
-            className="btn ghost small"
-            disabled={refreshing}
-            onClick={() => void refresh()}
-          >
-            {refreshing ? '更新中…' : '更新'}
-          </button>
-          <button type="button" className="btn ghost small" onClick={() => void auth.signOut()}>
-            退出
-          </button>
+        <div className={`header-actions ${screen === 'punch' ? 'with-settings' : ''}`}>
+          <div className="header-actions-row">
+            <button
+              type="button"
+              className="btn ghost small"
+              disabled={refreshing}
+              onClick={() => void refresh()}
+            >
+              {refreshing ? '更新中…' : '更新'}
+            </button>
+            <button type="button" className="btn ghost small" onClick={() => void auth.signOut()}>
+              退出
+            </button>
+          </div>
+          {screen === 'punch' ? (
+            <button
+              type="button"
+              className={`btn-gear ${punchSettingsOpen ? 'active' : ''}`}
+              aria-label="打刻の設定"
+              aria-expanded={punchSettingsOpen}
+              onClick={() => setPunchSettingsOpen((v) => !v)}
+            >
+              <span className="btn-gear-icon" aria-hidden>
+                ⚙
+              </span>
+            </button>
+          ) : null}
         </div>
       </header>
 
       <main className="app-main">
         {screen === 'select' ? (
           <ModeSelectPage
-            onPunch={() => setScreen('punch')}
+            onPunch={() => {
+              setPunchSettingsOpen(false)
+              setScreen('punch')
+            }}
             onAdmin={() => setScreen('admin-gate')}
           />
         ) : null}
         {screen === 'punch' ? <PunchPage /> : null}
+        <PunchSettingsOverlay
+          open={screen === 'punch' && punchSettingsOpen}
+          onClose={() => setPunchSettingsOpen(false)}
+        />
         {screen === 'admin-gate' ? (
           <AdminGatePage
             onBack={backToSelect}

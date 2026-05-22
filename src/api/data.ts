@@ -147,7 +147,7 @@ export async function upsertEmployee(
   const sb = getSupabase()
   if (!sb) throw new Error('Supabase未設定')
   const profile = await fetchProfile()
-  if (!profile || profile.role !== 'admin') throw new Error('管理者のみ')
+  if (!profile) throw new Error('ログインが必要です')
   if ('id' in row && row.id) {
     const { error } = await sb
       .from('employees')

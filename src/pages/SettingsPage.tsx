@@ -1,12 +1,9 @@
 import { useEffect, useState } from 'react'
-import {
-  fetchAllEmployees,
-  updateSettings,
-  upsertEmployee,
-} from '../api/data'
+import { updateSettings } from '../api/data'
 import { getSupabase } from '../supabaseClient'
 import { useAppData } from '../context/AppDataContext'
 import { CorrectionPanel } from '../components/CorrectionPanel'
+import { EmployeeManagePanel } from '../components/EmployeeManagePanel'
 import { BreakWindowsEditor } from '../components/BreakWindowsEditor'
 import { hashPassword } from '../lib/password'
 import { DEFAULT_THEME_ACCENT, DEFAULT_THEME_PRIMARY } from '../lib/theme'
@@ -18,9 +15,6 @@ export function SettingsPage() {
   const { profile, settings, employees: activeEmployees, records, refresh } = useAppData()
   const isAdmin = profile?.role === 'admin'
   const [section, setSection] = useState<SettingsSection>('work')
-  const [employees, setEmployees] = useState<{ id?: string; name: string; active: boolean }[]>(
-    [],
-  )
   const [periodMode, setPeriodMode] = useState<PeriodMode>(settings.period_mode)
   const [anchorDay, setAnchorDay] = useState(settings.period_anchor_day)
   const [stdHours, setStdHours] = useState(
@@ -31,17 +25,11 @@ export function SettingsPage() {
   const [adminPw, setAdminPw] = useState('')
   const [adminPw2, setAdminPw2] = useState('')
   const [myEmployeeId, setMyEmployeeId] = useState(profile?.employee_id ?? '')
-  const [newEmpName, setNewEmpName] = useState('')
   const [themePrimary, setThemePrimary] = useState(settings.theme_primary_color)
   const [themeAccent, setThemeAccent] = useState(settings.theme_accent_color)
   const [msg, setMsg] = useState<string | null>(null)
 
   useEffect(() => {
-    void fetchAllEmployees().then((list) =>
-      setEmployees(
-        list.map((e) => ({ id: e.id, name: e.display_name, active: e.active })),
-      ),
-    )
     setBreakWindows(settings.break_windows)
     setPeriodMode(settings.period_mode)
     setAnchorDay(settings.period_anchor_day)
@@ -121,45 +109,6 @@ export function SettingsPage() {
     await refresh()
   }
 
-  const saveEmployees = async () => {
-    for (const [i, e] of employees.entries()) {
-      if (e.id) {
-        await upsertEmployee({
-          id: e.id,
-          display_name: e.name.trim() || '無名',
-          active: e.active,
-          sort_order: i,
-        })
-      }
-    }
-    setMsg('社員一覧を保存しました')
-    await refresh()
-  }
-
-  const addEmployee = async () => {
-    if (!newEmpName.trim()) return
-    await upsertEmployee({
-      display_name: newEmpName.trim(),
-      active: true,
-      sort_order: employees.length,
-    })
-    setNewEmpName('')
-    setMsg('社員を追加しました')
-    await refresh()
-  }
-
-  const deactivateEmployee = async (id: string, name: string) => {
-    if (!window.confirm(`「${name}」を無効化（削除）しますか？`)) return
-    await upsertEmployee({
-      id,
-      display_name: name,
-      active: false,
-      sort_order: 999,
-    })
-    setMsg('社員を無効化しました')
-    await refresh()
-  }
-
   const saveTheme = async () => {
     await updateSettings({
       theme_primary_color: themePrimary,
@@ -229,74 +178,7 @@ export function SettingsPage() {
         </section>
       ) : null}
 
-      {section === 'users' ? (
-        <>
-          <section className="panel">
-            <h2 className="section-title">自分の打刻担当</h2>
-            <select
-              className="input"
-              value={myEmployeeId}
-              onChange={(e) => setMyEmployeeId(e.target.value)}
-            >
-              <option value="">未設定</option>
-              {employees
-                .filter((e) => e.active)
-                .map((e) => (
-                  <option key={e.id ?? e.name} value={e.id ?? ''}>
-                    {e.name}
-                  </option>
-                ))}
-            </select>
-            <button type="button" className="btn" onClick={() => void saveMyLink()}>
-              自分の担当を保存
-            </button>
-          </section>
-          <section className="panel">
-            <h2 className="section-title">ユーザー（社員）追加・削除</h2>
-            <ul className="emp-edit-list">
-              {employees.map((e, i) => (
-                <li key={e.id ?? i}>
-                  <input
-                    className="input grow"
-                    value={e.name}
-                    disabled={!e.active}
-                    onChange={(ev) => {
-                      const next = [...employees]
-                      next[i] = { ...e, name: ev.target.value }
-                      setEmployees(next)
-                    }}
-                  />
-                  {e.active ? (
-                    <button
-                      type="button"
-                      className="btn danger small"
-                      onClick={() => e.id && void deactivateEmployee(e.id, e.name)}
-                    >
-                      削除
-                    </button>
-                  ) : (
-                    <span className="badge badge-none">無効</span>
-                  )}
-                </li>
-              ))}
-            </ul>
-            <button type="button" className="btn block" onClick={() => void saveEmployees()}>
-              名前の変更を保存
-            </button>
-            <div className="add-emp-row">
-              <input
-                className="input grow"
-                placeholder="新しい表示名"
-                value={newEmpName}
-                onChange={(e) => setNewEmpName(e.target.value)}
-              />
-              <button type="button" className="btn primary" onClick={() => void addEmployee()}>
-                追加
-              </button>
-            </div>
-          </section>
-        </>
-      ) : null}
+      {section === 'users' ? <EmployeeManagePanel onMessage={setMsg} /> : null}
 
       {section === 'correction' ? (
         <CorrectionPanel
