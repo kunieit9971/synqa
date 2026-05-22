@@ -364,6 +364,10 @@ body {
   margin: 0 0 0.85rem;
 }
 
+.guide-figure + .guide-figure {
+  margin-top: 0.65rem;
+}
+
 .guide-figure img {
   display: block;
   width: 100%;

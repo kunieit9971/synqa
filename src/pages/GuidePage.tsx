@@ -32,7 +32,13 @@ export function GuidePage({ onBack }: Props) {
         {GUIDE_SECTIONS.map((section) => (
           <article key={section.id} id={`guide-${section.id}`} className="guide-section panel">
             <h2 className="guide-section-title">{section.title}</h2>
-            {section.image ? (
+            {section.images?.map((img) => (
+              <figure key={img.src} className="guide-figure">
+                <img src={img.src} alt={img.alt} loading="lazy" />
+                {img.caption ? <figcaption>{img.caption}</figcaption> : null}
+              </figure>
+            ))}
+            {!section.images?.length && section.image ? (
               <figure className="guide-figure">
                 <img src={section.image.src} alt={section.image.alt} loading="lazy" />
                 {section.image.caption ? (

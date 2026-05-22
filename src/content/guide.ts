@@ -14,6 +14,7 @@ export type GuideSection = {
   title: string
   blocks: GuideBlock[]
   image?: GuideImage
+  images?: GuideImage[]
   tips?: string[]
 }
 
@@ -128,11 +129,18 @@ export const GUIDE_SECTIONS: GuideSection[] = [
         ],
       },
     ],
-    image: {
-      src: '/guide/admin.svg',
-      alt: '管理者画面のイメージ',
-      caption: '勤務・残業 と 会社設定（スクショ未登録の場合はイラスト表示）',
-    },
+    images: [
+      {
+        src: '/guide/admin-1.jpg',
+        alt: '管理者モード①のスクリーンショット',
+        caption: '① 勤務・残業（確認・CSV出力）',
+      },
+      {
+        src: '/guide/admin-2.jpg',
+        alt: '管理者モード②のスクリーンショット',
+        caption: '② 会社設定（社員・修正・色など）',
+      },
+    ],
     tips: [
       '打刻の手動修正は「会社設定 → 修正」タブで行います。',
       '管理者パスワードは「会社設定 → 期間」タブで変更できます。',
