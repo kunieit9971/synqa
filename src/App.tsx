@@ -82,7 +82,6 @@ function AppShell({ onOpenGuide }: AppShellProps) {
           <h1 className="app-title">
             {screen === 'select' ? tenantName : headerTitle}
           </h1>
-          <p className="app-sub">{profile.display_name}</p>
         </div>
         <div className={`header-actions ${screen === 'punch' ? 'with-settings' : ''}`}>
           <div className="header-actions-row">
