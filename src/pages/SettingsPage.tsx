@@ -9,9 +9,10 @@ import { useAppData } from '../context/AppDataContext'
 import { CorrectionPanel } from '../components/CorrectionPanel'
 import { BreakWindowsEditor } from '../components/BreakWindowsEditor'
 import { hashPassword } from '../lib/password'
+import { DEFAULT_THEME_ACCENT, DEFAULT_THEME_PRIMARY } from '../lib/theme'
 import type { BreakWindow, PeriodMode } from '../types'
 
-type SettingsSection = 'work' | 'users' | 'correction' | 'period'
+type SettingsSection = 'work' | 'users' | 'correction' | 'period' | 'theme'
 
 export function SettingsPage() {
   const { profile, settings, employees: activeEmployees, records, refresh } = useAppData()
@@ -31,6 +32,8 @@ export function SettingsPage() {
   const [adminPw2, setAdminPw2] = useState('')
   const [myEmployeeId, setMyEmployeeId] = useState(profile?.employee_id ?? '')
   const [newEmpName, setNewEmpName] = useState('')
+  const [themePrimary, setThemePrimary] = useState(settings.theme_primary_color)
+  const [themeAccent, setThemeAccent] = useState(settings.theme_accent_color)
   const [msg, setMsg] = useState<string | null>(null)
 
   useEffect(() => {
@@ -44,6 +47,8 @@ export function SettingsPage() {
     setAnchorDay(settings.period_anchor_day)
     setStdHours(String(Math.floor(settings.standard_work_minutes_per_day / 60)))
     setOtLimit(String(settings.monthly_overtime_limit_hours))
+    setThemePrimary(settings.theme_primary_color)
+    setThemeAccent(settings.theme_accent_color)
   }, [settings.updated_at])
 
   if (!isAdmin) {
@@ -155,16 +160,31 @@ export function SettingsPage() {
     await refresh()
   }
 
+  const saveTheme = async () => {
+    await updateSettings({
+      theme_primary_color: themePrimary,
+      theme_accent_color: themeAccent,
+    })
+    setMsg('画面の色を保存しました')
+    await refresh()
+  }
+
+  const resetTheme = () => {
+    setThemePrimary(DEFAULT_THEME_PRIMARY)
+    setThemeAccent(DEFAULT_THEME_ACCENT)
+  }
+
   const sections: { id: SettingsSection; label: string }[] = [
-    { id: 'work', label: '勤務・休憩' },
+    { id: 'work', label: '勤務' },
     { id: 'users', label: 'ユーザー' },
-    { id: 'correction', label: '打刻修正' },
-    { id: 'period', label: '期間・PW' },
+    { id: 'correction', label: '修正' },
+    { id: 'period', label: '期間' },
+    { id: 'theme', label: '色' },
   ]
 
   return (
     <div className="page-stack">
-      <div className="settings-tabs">
+      <div className="settings-tabs cols-5">
         {sections.map((s) => (
           <button
             key={s.id}
@@ -285,6 +305,59 @@ export function SettingsPage() {
           settings={settings}
           onChanged={refresh}
         />
+      ) : null}
+
+      {section === 'theme' ? (
+        <section className="panel">
+          <h2 className="section-title">画面の色</h2>
+          <p className="hint">全員の画面に反映されます。初期値は Synqa 標準の青・ティールです。</p>
+          <div
+            className="theme-preview"
+            style={{
+              background: `linear-gradient(135deg, ${themePrimary} 0%, ${themeAccent} 100%)`,
+            }}
+          />
+          <label className="field">
+            <span>メインカラー</span>
+            <div className="color-field">
+              <input
+                type="color"
+                value={themePrimary}
+                onChange={(e) => setThemePrimary(e.target.value)}
+              />
+              <input
+                className="input"
+                value={themePrimary}
+                onChange={(e) => setThemePrimary(e.target.value)}
+                pattern="#[0-9A-Fa-f]{6}"
+              />
+            </div>
+          </label>
+          <label className="field">
+            <span>アクセントカラー</span>
+            <div className="color-field">
+              <input
+                type="color"
+                value={themeAccent}
+                onChange={(e) => setThemeAccent(e.target.value)}
+              />
+              <input
+                className="input"
+                value={themeAccent}
+                onChange={(e) => setThemeAccent(e.target.value)}
+                pattern="#[0-9A-Fa-f]{6}"
+              />
+            </div>
+          </label>
+          <div className="btn-row">
+            <button type="button" className="btn" onClick={resetTheme}>
+              標準に戻す
+            </button>
+            <button type="button" className="btn primary grow" onClick={() => void saveTheme()}>
+              色を保存
+            </button>
+          </div>
+        </section>
       ) : null}
 
       {section === 'period' ? (

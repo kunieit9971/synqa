@@ -168,10 +168,10 @@ export function AdminReportsPage() {
         </div>
 
         <button type="button" className="btn primary block" onClick={exportExcel}>
-          Excel用に出力（月別・ユーザーごと）
+          Excel用に出力（合計＋打刻ログ）
         </button>
         <p className="hint small">
-          出力内容: 各ユーザーの月ごとの合計勤務時間・残業時間・超過時間（時間表記あり）
+          月次合計（ユーザー×月）と、日別の打刻ログ（出勤・退勤時刻・実働・残業）を1ファイルに出力します。
         </p>
 
         <div className="table-card">

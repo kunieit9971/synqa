@@ -1,6 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useAuth } from './auth/AuthContext'
 import { AppDataProvider, useAppData } from './context/AppDataContext'
+import { MenuBackButton } from './components/MenuBackButton'
+import { applyTheme } from './lib/theme'
 import { LoginPage } from './pages/LoginPage'
 import { ModeSelectPage } from './pages/ModeSelectPage'
 import { AdminGatePage } from './pages/AdminGatePage'
@@ -14,9 +16,13 @@ type AdminTab = 'settings' | 'reports'
 
 function AppShell() {
   const auth = useAuth()
-  const { loading, refreshing, profile, tenantName, refresh } = useAppData()
+  const { loading, refreshing, profile, tenantName, settings, refresh } = useAppData()
   const [screen, setScreen] = useState<Screen>('select')
   const [adminTab, setAdminTab] = useState<AdminTab>('reports')
+
+  useEffect(() => {
+    applyTheme(settings)
+  }, [settings.theme_primary_color, settings.theme_accent_color, settings.updated_at])
 
   if (!auth.session) return <LoginPage />
 
@@ -59,11 +65,7 @@ function AppShell() {
     <div className="app-shell">
       <header className="app-header">
         <div className="header-main">
-          {screen !== 'select' ? (
-            <button type="button" className="btn-back" onClick={backToSelect}>
-              ← 機能メニューへ
-            </button>
-          ) : null}
+          {screen !== 'select' ? <MenuBackButton onClick={backToSelect} /> : null}
           <p className="app-brand">Synqa</p>
           <h1 className="app-title">
             {screen === 'select' ? tenantName : headerTitle}

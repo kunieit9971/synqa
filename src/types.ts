@@ -15,6 +15,8 @@ export type TenantSettings = {
   period_anchor_day: number
   break_windows: BreakWindow[]
   monthly_overtime_limit_hours: number
+  theme_primary_color: string
+  theme_accent_color: string
   updated_at: string
 }
 
@@ -60,4 +62,6 @@ export const DEFAULT_TENANT_SETTINGS: Omit<TenantSettings, 'tenant_id' | 'update
   period_anchor_day: 1,
   break_windows: DEFAULT_BREAK_WINDOWS,
   monthly_overtime_limit_hours: 20,
+  theme_primary_color: '#0066FF',
+  theme_accent_color: '#00C9A7',
 }

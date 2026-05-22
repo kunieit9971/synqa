@@ -1,6 +1,12 @@
 import type { EmployeeMonthSummary } from './metrics'
-import { summarizeEmployeeMonth } from './metrics'
-import { formatMinutesJa } from './metrics'
+import {
+  summarizeEmployeeMonth,
+  workMinutes,
+  overtimeMinutes,
+  formatMinutesJa,
+} from './metrics'
+import { isDateInRange } from './period'
+import { formatClock } from './dates'
 import type { ReportGranularity } from './period'
 import type { Employee, TenantSettings } from '../types'
 import type { AttendanceRecord } from '../types'
@@ -13,6 +19,25 @@ function csvCell(s: string): string {
   const t = s.replace(/"/g, '""')
   return /[",\n\r]/.test(t) ? `"${t}"` : t
 }
+
+const CSV_HEADER = [
+  '行種別',
+  '会社名',
+  '担当名',
+  '対象年月',
+  '勤務日',
+  '出勤時刻',
+  '退勤時刻',
+  '出勤日数',
+  '勤務時間_分',
+  '勤務時間_時間',
+  '残業時間_分',
+  '残業時間_時間',
+  '残業上限_時間_月',
+  '超過時間_分',
+  '超過時間_時間',
+  '超過あり',
+]
 
 /** 期間内の暦月 YYYY-MM 一覧 */
 export function monthsBetween(startIso: string, endIso: string): string[] {
@@ -39,7 +64,6 @@ export type PayrollExportMeta = {
   monthlyOvertimeLimitHours: number
 }
 
-/** 集計区分ごとの残業上限（分）— 画面表示用 */
 export function overtimeLimitMinutes(
   settings: TenantSettings,
   granularity: ReportGranularity,
@@ -89,7 +113,57 @@ export function buildMonthlyExportRows(
   return rows
 }
 
-/** 給与計算用 CSV（ユーザー×月ごとの合計） */
+function buildLogExportRows(
+  employees: Employee[],
+  records: AttendanceRecord[],
+  settings: TenantSettings,
+  startIso: string,
+  endIso: string,
+  companyName: string,
+): string[][] {
+  const nameMap = new Map(employees.map((e) => [e.id, e.display_name]))
+  const std = settings.standard_work_minutes_per_day
+  const windows = settings.break_windows
+  const sorted = [...records]
+    .filter(
+      (r) =>
+        isDateInRange(r.work_date, startIso, endIso) &&
+        nameMap.has(r.employee_id),
+    )
+    .sort((a, b) => {
+      const n = a.work_date.localeCompare(b.work_date)
+      if (n !== 0) return n
+      return (nameMap.get(a.employee_id) ?? '').localeCompare(
+        nameMap.get(b.employee_id) ?? '',
+        'ja',
+      )
+    })
+
+  return sorted.map((r) => {
+    const wm = workMinutes(r, windows)
+    const ot = r.clock_out_at ? overtimeMinutes(r, windows, std) : 0
+    return [
+      '打刻ログ',
+      companyName,
+      nameMap.get(r.employee_id) ?? '',
+      r.work_date.slice(0, 7),
+      r.work_date,
+      formatClock(r.clock_in_at),
+      r.clock_out_at ? formatClock(r.clock_out_at) : '',
+      '',
+      String(wm),
+      minutesToDecimalHours(wm),
+      String(ot),
+      minutesToDecimalHours(ot),
+      '',
+      '',
+      '',
+      '',
+    ]
+  })
+}
+
+/** 給与計算用 CSV（月次合計 + 打刻ログ） */
 export function downloadPayrollCsv(
   employees: Employee[],
   records: AttendanceRecord[],
@@ -107,30 +181,18 @@ export function downloadPayrollCsv(
   )
   const limitH = meta.monthlyOvertimeLimitHours
 
-  const header = [
-    '会社名',
-    '担当名',
-    '対象年月',
-    '出力期間',
-    '出勤日数',
-    '合計勤務時間_分',
-    '合計勤務時間_時間',
-    '合計残業時間_分',
-    '合計残業時間_時間',
-    '残業上限_時間_月',
-    '超過時間_分',
-    '超過時間_時間',
-    '超過あり',
-  ]
+  const lines: string[] = [CSV_HEADER.join(',')]
 
-  const lines: string[] = [header.join(',')]
   for (const r of monthlyRows) {
     lines.push(
       [
+        '月次合計',
         meta.companyName,
         r.displayName,
         r.yearMonth,
-        meta.periodLabel,
+        '',
+        '',
+        '',
         String(r.daysWorked),
         String(r.workMinutes),
         minutesToDecimalHours(r.workMinutes),
@@ -146,6 +208,20 @@ export function downloadPayrollCsv(
     )
   }
 
+  lines.push(CSV_HEADER.map(() => '').join(','))
+  lines.push(['【打刻ログ（日別）】', ...CSV_HEADER.slice(1).map(() => '')].map(csvCell).join(','))
+
+  for (const row of buildLogExportRows(
+    employees,
+    records,
+    settings,
+    startIso,
+    endIso,
+    meta.companyName,
+  )) {
+    lines.push(row.map(csvCell).join(','))
+  }
+
   const bom = '\uFEFF'
   const blob = new Blob([bom + lines.join('\r\n')], {
     type: 'text/csv;charset=utf-8',
@@ -154,7 +230,7 @@ export function downloadPayrollCsv(
   const a = document.createElement('a')
   const safePeriod = meta.periodLabel.replace(/[^\d\-年月日週次〜\s]/g, '').slice(0, 40)
   a.href = url
-  a.download = `synqa_給与用_月別_${safePeriod || 'export'}.csv`
+  a.download = `synqa_給与用_${safePeriod || 'export'}.csv`
   a.click()
   URL.revokeObjectURL(url)
 }
@@ -168,7 +244,6 @@ export type SummaryRowView = EmployeeMonthSummary & {
   overLimit: boolean
 }
 
-/** 画面表示用（時間表記） */
 export function formatSummaryRow(
   r: EmployeeMonthSummary,
   otLimitMin: number,

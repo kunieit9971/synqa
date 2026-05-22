@@ -44,6 +44,8 @@ export function normalizeSettings(row: Record<string, unknown>): TenantSettings 
     ),
     break_windows: normalizeBreakWindows(row.break_windows),
     monthly_overtime_limit_hours: Number(row.monthly_overtime_limit_hours) || 20,
+    theme_primary_color: String(row.theme_primary_color ?? '#0066FF'),
+    theme_accent_color: String(row.theme_accent_color ?? '#00C9A7'),
     updated_at: String(row.updated_at ?? ''),
   }
 }
@@ -94,6 +96,8 @@ export async function updateSettings(
       | 'period_anchor_day'
       | 'break_windows'
       | 'monthly_overtime_limit_hours'
+      | 'theme_primary_color'
+      | 'theme_accent_color'
     >
   >,
 ): Promise<void> {

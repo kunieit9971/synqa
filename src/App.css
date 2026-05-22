@@ -53,7 +53,12 @@ body {
   justify-content: space-between;
   gap: 0.5rem;
   padding: 0.85rem 1rem 0.75rem;
-  background: linear-gradient(135deg, var(--accent) 0%, #0052cc 48%, var(--accent-teal) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--accent) 0%,
+    color-mix(in srgb, var(--accent) 70%, #003d99) 50%,
+    var(--accent-teal) 100%
+  );
   color: #fff;
   box-shadow: var(--shadow-md);
 }
@@ -948,15 +953,85 @@ textarea.input:focus {
   color: #008f75;
 }
 
-.btn-back {
-  font: inherit;
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.95);
-  background: none;
-  border: none;
-  padding: 0 0 0.4rem;
+.btn-menu-back {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: 100%;
+  margin-bottom: 0.5rem;
+  padding: 0.45rem 0.55rem;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
   cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.btn-menu-back-icon {
+  font-size: 1.1rem;
+  line-height: 1;
+  width: 1.75rem;
+  height: 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.2);
+  font-weight: 800;
+}
+
+.btn-menu-back-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+}
+
+.btn-menu-back-label {
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
+.btn-menu-back-sub {
+  font-size: 0.68rem;
+  font-weight: 600;
+  opacity: 0.88;
+}
+
+.settings-tabs.cols-5 {
+  grid-template-columns: repeat(5, 1fr);
+}
+
+.settings-tabs.cols-5 button {
+  font-size: 0.62rem;
+  padding: 0.45rem 0.15rem;
+}
+
+.theme-preview {
+  height: 48px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 0.85rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.color-field {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.color-field input[type='color'] {
+  width: 48px;
+  height: 40px;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.color-field .input {
+  flex: 1;
 }
 
 .team-status-wrap .subsection-title {
