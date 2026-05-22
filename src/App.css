@@ -81,11 +81,10 @@ body {
 
 .app-brand {
   margin: 0;
-  font-size: 0.68rem;
+  font-size: 0.8rem;
   font-weight: 800;
-  letter-spacing: 0.14em;
-  color: rgba(255, 255, 255, 0.85);
-  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .app-title {
@@ -136,22 +135,45 @@ body {
   grid-template-columns: repeat(4, 1fr);
 }
 
-.bottom-nav button {
+.bottom-nav .nav-item {
   font: inherit;
-  font-size: 0.8rem;
-  font-weight: 700;
-  padding: 0.7rem 0.35rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  padding: 0.55rem 0.35rem;
   border: none;
   border-radius: var(--radius-sm);
   background: transparent;
   color: var(--muted);
+  cursor: pointer;
   transition: background 0.15s, color 0.15s, transform 0.1s;
 }
 
-.bottom-nav button.active {
+.bottom-nav .nav-item.active {
   background: linear-gradient(135deg, var(--accent-soft), var(--teal-soft));
   color: var(--accent);
   box-shadow: var(--shadow-sm);
+}
+
+.bottom-nav .nav-icon {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+.bottom-nav .nav-label {
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.bottom-nav .nav-desc {
+  font-size: 0.62rem;
+  font-weight: 600;
+  opacity: 0.85;
+}
+
+.bottom-nav .nav-item.active .nav-desc {
+  color: var(--accent);
 }
 
 .panel {
@@ -827,14 +849,33 @@ textarea.input:focus {
   gap: 0.85rem;
 }
 
+.menu-hero {
+  text-align: center;
+}
+
+.menu-logo {
+  display: block;
+  margin: 0 auto 0.5rem;
+  border-radius: 14px;
+  box-shadow: var(--shadow-sm);
+}
+
+.menu-brand {
+  margin: 0 0 0.35rem;
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--accent);
+}
+
 .mode-select-card {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: stretch;
   text-align: left;
-  padding: 1.35rem 1.15rem;
+  padding: 1.15rem 1.1rem;
   border-radius: var(--radius);
-  border: none;
+  border: 2px solid var(--border);
   cursor: pointer;
   font: inherit;
   width: 100%;
@@ -847,30 +888,64 @@ textarea.input:focus {
 }
 
 .mode-select-card.punch {
-  background: linear-gradient(135deg, #fff 0%, var(--accent-soft) 100%);
-  box-shadow: var(--shadow-lg);
+  background: linear-gradient(160deg, #fff 0%, var(--accent-soft) 100%);
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
 }
 
 .mode-select-card.admin {
-  background: linear-gradient(135deg, #fff 0%, var(--teal-soft) 100%);
+  background: linear-gradient(160deg, #fff 0%, var(--teal-soft) 100%);
+  border-color: color-mix(in srgb, var(--accent-teal) 40%, var(--border));
 }
 
-.mode-select-icon {
-  font-size: 1.75rem;
+.mode-select-badge {
+  display: inline-block;
+  align-self: flex-start;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  padding: 0.25rem 0.55rem;
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+}
+
+.mode-select-badge.punch {
+  background: var(--accent);
+  color: #fff;
+}
+
+.mode-select-badge.admin {
+  background: var(--accent-teal);
+  color: #fff;
 }
 
 .mode-select-title {
-  font-size: 1.35rem;
+  font-size: 1.2rem;
   font-weight: 800;
-  margin-top: 0.4rem;
   letter-spacing: -0.02em;
+  margin: 0 0 0.45rem;
 }
 
-.mode-select-desc {
-  font-size: 0.86rem;
+.mode-select-list {
+  margin: 0 0 0.65rem;
+  padding-left: 1.1rem;
+  font-size: 0.82rem;
   color: var(--muted);
-  margin-top: 0.25rem;
-  font-weight: 500;
+  line-height: 1.5;
+}
+
+.mode-select-list li {
+  margin-bottom: 0.15rem;
+}
+
+.mode-select-go {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: var(--accent);
+  margin-top: auto;
+}
+
+.mode-select-card.admin .mode-select-go {
+  color: #008f75;
 }
 
 .btn-back {

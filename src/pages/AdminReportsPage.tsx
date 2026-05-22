@@ -79,30 +79,12 @@ export function AdminReportsPage() {
   }
 
   const exportExcel = () => {
-    const raw = employees
-      .filter((e) => e.active)
-      .map((e) =>
-        granularity === 'month'
-          ? summarizeEmployeeMonth(e.id, e.display_name, records, settings, focusYm)
-          : summarizeEmployeeInRange(
-              e.id,
-              e.display_name,
-              records,
-              settings,
-              period.start,
-              period.end,
-            ),
-      )
-    downloadPayrollCsv(
-      raw,
-      {
-        companyName: tenantName,
-        periodLabel: period.label,
-        granularity: granLabel,
-        overtimeLimitHours: otLimitHours,
-      },
-      otLimitMin,
-    )
+    downloadPayrollCsv(employees, records, settings, {
+      companyName: tenantName,
+      periodLabel: `${granLabel} ${period.label}`,
+      granularity: granLabel,
+      monthlyOvertimeLimitHours: settings.monthly_overtime_limit_hours,
+    }, period.start, period.end)
   }
 
   return (
@@ -186,8 +168,11 @@ export function AdminReportsPage() {
         </div>
 
         <button type="button" className="btn primary block" onClick={exportExcel}>
-          Excel用に出力（CSV）
+          Excel用に出力（月別・ユーザーごと）
         </button>
+        <p className="hint small">
+          出力内容: 各ユーザーの月ごとの合計勤務時間・残業時間・超過時間（時間表記あり）
+        </p>
 
         <div className="table-card">
           <table className="data-table reports-table">

@@ -61,7 +61,7 @@ function AppShell() {
         <div className="header-main">
           {screen !== 'select' ? (
             <button type="button" className="btn-back" onClick={backToSelect}>
-              ← メニュー
+              ← 機能メニューへ
             </button>
           ) : null}
           <p className="app-brand">Synqa</p>
@@ -111,17 +111,25 @@ function AppShell() {
         <nav className="bottom-nav cols-2" aria-label="管理メニュー">
           <button
             type="button"
-            className={adminTab === 'reports' ? 'active' : ''}
+            className={`nav-item ${adminTab === 'reports' ? 'active' : ''}`}
             onClick={() => setAdminTab('reports')}
           >
-            確認
+            <span className="nav-icon" aria-hidden>
+              📊
+            </span>
+            <span className="nav-label">勤務・残業</span>
+            <span className="nav-desc">確認・Excel</span>
           </button>
           <button
             type="button"
-            className={adminTab === 'settings' ? 'active' : ''}
+            className={`nav-item ${adminTab === 'settings' ? 'active' : ''}`}
             onClick={() => setAdminTab('settings')}
           >
-            設定
+            <span className="nav-icon" aria-hidden>
+              ⚙️
+            </span>
+            <span className="nav-label">会社設定</span>
+            <span className="nav-desc">社員・修正</span>
           </button>
         </nav>
       ) : null}
