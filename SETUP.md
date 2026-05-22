@@ -16,6 +16,45 @@ npm run check:supabase   # テーブル接続確認
 npm run dev              # https://localhost:5174/
 ```
 
+## GitHub（[github.com](https://github.com/)）
+
+ローカルはコミット済み。リモート未設定です。
+
+### 1. リポジトリを新規作成
+
+1. [GitHub](https://github.com/) にログイン → **New repository**
+2. 名前例: `synqa`（Public / Private はお好み）
+3. **README / .gitignore は追加しない**（空のリポジトリ）
+
+### 2. push（PowerShell）
+
+`YOUR_USER` をあなたの GitHub ユーザー名に置き換えて実行:
+
+```powershell
+cd c:\Users\kageyama\Desktop\attendance-cloud
+
+$git = "C:\Program Files\Git\cmd\git.exe"
+
+& $git remote add origin https://github.com/YOUR_USER/synqa.git
+& $git branch -M main
+& $git push -u origin main
+```
+
+Git のユーザー名・メールが未設定で push が失敗する場合のみ、**一度だけ**（グローバル）:
+
+```powershell
+& $git config --global user.name "mikihiro"
+& $git config --global user.email "kunieda9971j@gmail.com"
+```
+
+（`git.exe` の前に `&` が必要です。ないと PowerShell でエラーになります。）
+
+### 3. 認証
+
+初回 push で GitHub のログイン（ブラウザ or Personal Access Token）を求められます。
+
+---
+
 ## Vercel（[kunieit9971-s-projects](https://vercel.com/kunieit9971-s-projects)）
 
 1. GitHub にリポジトリを push 後、**新規 Project** で Import
