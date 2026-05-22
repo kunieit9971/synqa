@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { punchIn, punchOut } from '../api/data'
 import { PunchStatusTable } from '../components/PunchStatusTable'
 import { useAppData } from '../context/AppDataContext'
-import { captureGps, isSecureContext } from '../lib/geo'
+import { captureGps, formatGps, googleMapsUrl, isSecureContext } from '../lib/geo'
 import {
   formatClock,
   formatDateJaWithWeekday,
@@ -10,6 +10,51 @@ import {
   todayIsoDate,
 } from '../lib/dates'
 import { workMinutes, overtimeMinutes, formatMinutesJa } from '../lib/metrics'
+import type { AttendanceRecord } from '../types'
+
+function hasGps(lat: number, lng: number): boolean {
+  return lat !== 0 || lng !== 0
+}
+
+function PunchGpsLines({ record }: { record: AttendanceRecord }) {
+  const inOk = hasGps(record.clock_in_lat, record.clock_in_lng)
+  const outOk =
+    record.clock_out_at != null &&
+    record.clock_out_lat != null &&
+    record.clock_out_lng != null &&
+    hasGps(record.clock_out_lat, record.clock_out_lng)
+
+  if (!inOk && !outOk) return null
+
+  return (
+    <div className="punch-gps">
+      {inOk ? (
+        <p className="punch-gps-line">
+          <span className="punch-gps-label">出勤 GPS</span>
+          <a
+            href={googleMapsUrl(record.clock_in_lat, record.clock_in_lng)}
+            target="_blank"
+            rel="noreferrer"
+          >
+            {formatGps(record.clock_in_lat, record.clock_in_lng)}
+          </a>
+        </p>
+      ) : null}
+      {outOk ? (
+        <p className="punch-gps-line">
+          <span className="punch-gps-label">退勤 GPS</span>
+          <a
+            href={googleMapsUrl(record.clock_out_lat!, record.clock_out_lng!)}
+            target="_blank"
+            rel="noreferrer"
+          >
+            {formatGps(record.clock_out_lat!, record.clock_out_lng!)}
+          </a>
+        </p>
+      ) : null}
+    </div>
+  )
+}
 
 export function PunchPage() {
   const { profile, settings, employees, records, refresh } = useAppData()
@@ -166,6 +211,7 @@ export function PunchPage() {
 
         {statusLine ? <p className="punch-simple-status">{statusLine}</p> : null}
         {summaryLine ? <p className="punch-simple-summary">{summaryLine}</p> : null}
+        {todayRecord ? <PunchGpsLines record={todayRecord} /> : null}
 
         {doneToday ? (
           <div className="punch-round-btn done" aria-disabled>

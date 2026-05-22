@@ -1234,6 +1234,42 @@ textarea.input:focus {
   color: var(--muted);
 }
 
+.punch-gps {
+  margin: 0.65rem 0 0;
+  padding: 0.55rem 0.75rem;
+  width: 100%;
+  max-width: 18rem;
+  background: var(--accent-soft);
+  border-radius: var(--radius-sm);
+  text-align: left;
+}
+
+.punch-gps-line {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.5rem;
+  align-items: baseline;
+}
+
+.punch-gps-line + .punch-gps-line {
+  margin-top: 0.35rem;
+}
+
+.punch-gps-label {
+  font-weight: 700;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.punch-gps-line a {
+  color: var(--accent);
+  font-weight: 600;
+  word-break: break-all;
+}
+
 .punch-round-btn {
   display: flex;
   align-items: center;
