@@ -7,7 +7,7 @@
     "icons": "node scripts/generate-pwa-icons.mjs",
     "check:supabase": "node scripts/check-supabase.mjs",
     "dev": "vite",
-    "build": "npm run icons && tsc -b && vite build",
+    "build": "node scripts/verify-vite-env.mjs && npm run icons && tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },

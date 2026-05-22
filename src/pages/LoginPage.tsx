@@ -28,12 +28,19 @@ export function LoginPage() {
   const [msg, setMsg] = useState<string | null>(null)
 
   if (!isSupabaseConfigured) {
+    const hasUrl = Boolean(String(import.meta.env.VITE_SUPABASE_URL ?? '').trim())
+    const hasKey = Boolean(String(import.meta.env.VITE_SUPABASE_ANON_KEY ?? '').trim())
     return (
       <div className="auth-screen">
         <div className="panel auth-panel">
           <BrandHeader />
           <p className="error">
             Supabase の URL と anon キーが読み込めていません。ローカル保存のみの運用はできません。
+          </p>
+          <p className="hint small">
+            診断: <code>VITE_SUPABASE_URL</code>={hasUrl ? 'あり' : 'なし'} /{' '}
+            <code>VITE_SUPABASE_ANON_KEY</code>={hasKey ? 'あり' : 'なし'}
+            {import.meta.env.MODE ? `（${import.meta.env.MODE}）` : null}
           </p>
           <p className="hint small">
             <strong>ローカル:</strong> <code>.env</code> に{' '}
