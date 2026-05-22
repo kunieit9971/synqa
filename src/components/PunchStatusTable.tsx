@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { formatClock } from '../lib/dates'
+import { googleMapsUrl } from '../lib/geo'
 import { resolveTodayStatus } from '../lib/metrics'
 import type { AttendanceRecord, Employee } from '../types'
 
@@ -7,6 +8,35 @@ type Props = {
   employees: Employee[]
   records: AttendanceRecord[]
   workDate: string
+}
+
+function hasGps(lat: number | null | undefined, lng: number | null | undefined): boolean {
+  return lat != null && lng != null && (lat !== 0 || lng !== 0)
+}
+
+function GpsCell({
+  label,
+  lat,
+  lng,
+}: {
+  label: string
+  lat: number | null | undefined
+  lng: number | null | undefined
+}) {
+  if (!hasGps(lat, lng)) {
+    return <span className="gps-cell-none">—</span>
+  }
+  return (
+    <a
+      className="gps-cell-link"
+      href={googleMapsUrl(lat!, lng!)}
+      target="_blank"
+      rel="noreferrer"
+      title={`${label}の位置を地図で開く`}
+    >
+      {label}
+    </a>
+  )
 }
 
 export function PunchStatusTable({ employees, records, workDate }: Props) {
@@ -44,6 +74,7 @@ export function PunchStatusTable({ employees, records, workDate }: Props) {
                 <th>状態</th>
                 <th>出勤</th>
                 <th>退勤</th>
+                <th>GPS</th>
               </tr>
             </thead>
             <tbody>
@@ -60,6 +91,20 @@ export function PunchStatusTable({ employees, records, workDate }: Props) {
                   <td>{rec ? formatClock(rec.clock_in_at) : '—'}</td>
                   <td>
                     {rec?.clock_out_at ? formatClock(rec.clock_out_at) : '—'}
+                  </td>
+                  <td className="gps-cell">
+                    {rec ? (
+                      <span className="gps-cell-pair">
+                        <GpsCell label="出" lat={rec.clock_in_lat} lng={rec.clock_in_lng} />
+                        <GpsCell
+                          label="退"
+                          lat={rec.clock_out_lat}
+                          lng={rec.clock_out_lng}
+                        />
+                      </span>
+                    ) : (
+                      '—'
+                    )}
                   </td>
                 </tr>
               ))}

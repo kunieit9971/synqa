@@ -16,42 +16,44 @@ function hasGps(lat: number, lng: number): boolean {
   return lat !== 0 || lng !== 0
 }
 
+function GpsLink({ lat, lng }: { lat: number; lng: number }) {
+  return (
+    <a href={googleMapsUrl(lat, lng)} target="_blank" rel="noreferrer">
+      {formatGps(lat, lng)}
+    </a>
+  )
+}
+
 function PunchGpsLines({ record }: { record: AttendanceRecord }) {
   const inOk = hasGps(record.clock_in_lat, record.clock_in_lng)
+  const outLat = record.clock_out_lat
+  const outLng = record.clock_out_lng
   const outOk =
     record.clock_out_at != null &&
-    record.clock_out_lat != null &&
-    record.clock_out_lng != null &&
-    hasGps(record.clock_out_lat, record.clock_out_lng)
-
-  if (!inOk && !outOk) return null
+    outLat != null &&
+    outLng != null &&
+    hasGps(outLat, outLng)
 
   return (
     <div className="punch-gps">
-      {inOk ? (
-        <p className="punch-gps-line">
-          <span className="punch-gps-label">出勤 GPS</span>
-          <a
-            href={googleMapsUrl(record.clock_in_lat, record.clock_in_lng)}
-            target="_blank"
-            rel="noreferrer"
-          >
-            {formatGps(record.clock_in_lat, record.clock_in_lng)}
-          </a>
-        </p>
-      ) : null}
-      {outOk ? (
-        <p className="punch-gps-line">
-          <span className="punch-gps-label">退勤 GPS</span>
-          <a
-            href={googleMapsUrl(record.clock_out_lat!, record.clock_out_lng!)}
-            target="_blank"
-            rel="noreferrer"
-          >
-            {formatGps(record.clock_out_lat!, record.clock_out_lng!)}
-          </a>
-        </p>
-      ) : null}
+      <p className="punch-gps-line">
+        <span className="punch-gps-label">出勤 GPS</span>
+        {inOk ? (
+          <GpsLink lat={record.clock_in_lat} lng={record.clock_in_lng} />
+        ) : (
+          <span className="punch-gps-muted">未記録</span>
+        )}
+      </p>
+      <p className="punch-gps-line">
+        <span className="punch-gps-label">退勤 GPS</span>
+        {!record.clock_out_at ? (
+          <span className="punch-gps-muted">退勤打刻で記録</span>
+        ) : outOk ? (
+          <GpsLink lat={outLat} lng={outLng} />
+        ) : (
+          <span className="punch-gps-muted">未記録</span>
+        )}
+      </p>
     </div>
   )
 }
@@ -211,7 +213,9 @@ export function PunchPage() {
 
         {statusLine ? <p className="punch-simple-status">{statusLine}</p> : null}
         {summaryLine ? <p className="punch-simple-summary">{summaryLine}</p> : null}
-        {todayRecord ? <PunchGpsLines record={todayRecord} /> : null}
+        {(todayRecord ?? openRecord) ? (
+          <PunchGpsLines record={(todayRecord ?? openRecord)!} />
+        ) : null}
 
         {doneToday ? (
           <div className="punch-round-btn done" aria-disabled>

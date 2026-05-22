@@ -1270,6 +1270,41 @@ textarea.input:focus {
   word-break: break-all;
 }
 
+.punch-gps-muted {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.gps-cell {
+  white-space: nowrap;
+}
+
+.gps-cell-pair {
+  display: inline-flex;
+  gap: 0.35rem;
+}
+
+.gps-cell-link {
+  display: inline-block;
+  padding: 0.15rem 0.45rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-radius: 6px;
+  text-decoration: none;
+}
+
+.gps-cell-link:hover {
+  text-decoration: underline;
+}
+
+.gps-cell-none {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
 .punch-round-btn {
   display: flex;
   align-items: center;
