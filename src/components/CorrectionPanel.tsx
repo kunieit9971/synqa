@@ -144,14 +144,12 @@ function CorrectionItem({
     const wd = inIso.slice(0, 10)
     await saveRecordCorrection(record.id, inIso, outIso, wd)
     await onChanged()
-    alert('保存しました')
   }
 
   const remove = async () => {
     if (!window.confirm('この打刻を削除しますか？')) return
     await deleteRecord(record.id)
     await onChanged()
-    alert('削除しました')
   }
 
   return (
@@ -181,7 +179,7 @@ function CorrectionItem({
         <button type="button" className="btn primary" onClick={() => void save()}>
           保存
         </button>
-        <button type="button" className="btn danger ghost" onClick={() => void remove()}>
+        <button type="button" className="btn danger" onClick={() => void remove()}>
           削除
         </button>
       </div>

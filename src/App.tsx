@@ -14,13 +14,13 @@ type AdminTab = 'settings' | 'reports'
 
 function AppShell() {
   const auth = useAuth()
-  const { loading, profile, tenantName, refresh } = useAppData()
+  const { loading, refreshing, profile, tenantName, refresh } = useAppData()
   const [screen, setScreen] = useState<Screen>('select')
   const [adminTab, setAdminTab] = useState<AdminTab>('reports')
 
   if (!auth.session) return <LoginPage />
 
-  if (loading) {
+  if (loading && !profile) {
     return (
       <div className="loading-screen" role="status">
         読み込み中…
@@ -71,8 +71,13 @@ function AppShell() {
           <p className="app-sub">{profile.display_name}</p>
         </div>
         <div className="header-actions">
-          <button type="button" className="btn ghost small" onClick={() => void refresh()}>
-            更新
+          <button
+            type="button"
+            className="btn ghost small"
+            disabled={refreshing}
+            onClick={() => void refresh()}
+          >
+            {refreshing ? '更新中…' : '更新'}
           </button>
           <button type="button" className="btn ghost small" onClick={() => void auth.signOut()}>
             退出

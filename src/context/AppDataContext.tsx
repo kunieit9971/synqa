@@ -20,14 +20,20 @@ import { isoDaysAgo, todayIsoDate } from '../lib/dates'
 import type { AttendanceRecord, Employee, Profile, TenantSettings } from '../types'
 import { useAuth } from '../auth/AuthContext'
 
+type RefreshOptions = {
+  /** true のときだけ全画面ローディング（初回読込など） */
+  blocking?: boolean
+}
+
 type AppDataValue = {
   loading: boolean
+  refreshing: boolean
   profile: Profile | null
   tenantName: string
   settings: TenantSettings
   employees: Employee[]
   records: AttendanceRecord[]
-  refresh: () => Promise<void>
+  refresh: (opts?: RefreshOptions) => Promise<void>
 }
 
 const AppDataContext = createContext<AppDataValue | null>(null)
@@ -35,19 +41,26 @@ const AppDataContext = createContext<AppDataValue | null>(null)
 export function AppDataProvider({ children }: { children: ReactNode }) {
   const auth = useAuth()
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [tenantName, setTenantName] = useState('')
   const [settings, setSettings] = useState<TenantSettings | null>(null)
   const [employees, setEmployees] = useState<Employee[]>([])
   const [records, setRecords] = useState<AttendanceRecord[]>([])
 
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (opts?: RefreshOptions) => {
     if (!auth.session) {
       setProfile(null)
       setLoading(false)
+      setRefreshing(false)
       return
     }
-    setLoading(true)
+    const blocking = opts?.blocking ?? false
+    if (blocking || profile === null) {
+      setLoading(true)
+    } else {
+      setRefreshing(true)
+    }
     try {
       const p = await fetchProfile()
       setProfile(p)
@@ -70,16 +83,18 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       setRecords(recs)
     } finally {
       setLoading(false)
+      setRefreshing(false)
     }
-  }, [auth.session])
+  }, [auth.session, profile])
 
   useEffect(() => {
-    void refresh()
-  }, [refresh])
+    void refresh({ blocking: true })
+  }, [auth.session])
 
   const value = useMemo(
     () => ({
       loading,
+      refreshing,
       profile,
       tenantName,
       settings: settings ?? defaultSettingsForTenant(profile?.tenant_id ?? ''),
@@ -87,7 +102,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       records,
       refresh,
     }),
-    [loading, profile, tenantName, settings, employees, records, refresh],
+    [loading, refreshing, profile, tenantName, settings, employees, records, refresh],
   )
 
   return (
