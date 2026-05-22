@@ -21,7 +21,7 @@ export function TeamStatusTable({ employees, records, workDate }: Props) {
 
   return (
     <div className="team-status-wrap">
-      <h2 className="section-title">本日の出勤状況（全員）</h2>
+      <h3 className="subsection-title">全員一覧</h3>
       <div className="table-scroll">
         <table className="data-table">
           <thead>

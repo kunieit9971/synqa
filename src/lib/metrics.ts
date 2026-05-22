@@ -101,6 +101,32 @@ export function summarizeEmployeeMonth(
 
 export type TodayStatus = 'in' | 'out' | 'none'
 
+export function summarizeEmployeeYear(
+  employeeId: string,
+  displayName: string,
+  records: AttendanceRecord[],
+  settings: TenantSettings,
+  year: number,
+): EmployeeMonthSummary {
+  let work = 0
+  let ot = 0
+  let days = 0
+  for (let m = 1; m <= 12; m++) {
+    const ym = `${year}-${String(m).padStart(2, '0')}`
+    const month = summarizeEmployeeMonth(
+      employeeId,
+      displayName,
+      records,
+      settings,
+      ym,
+    )
+    work += month.workMinutes
+    ot += month.overtimeMinutes
+    days += month.daysWorked
+  }
+  return { employeeId, displayName, workMinutes: work, overtimeMinutes: ot, daysWorked: days }
+}
+
 export function resolveTodayStatus(
   records: AttendanceRecord[],
   employeeId: string,

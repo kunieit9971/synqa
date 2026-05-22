@@ -1,7 +1,5 @@
 import { useMemo, useState } from 'react'
 import { punchIn, punchOut } from '../api/data'
-import { TeamStatusTable } from '../components/TeamStatusTable'
-import { CorrectionPanel } from '../components/CorrectionPanel'
 import { useAppData } from '../context/AppDataContext'
 import { captureGps, formatGps, googleMapsUrl, isSecureContext } from '../lib/geo'
 import { formatClock, formatDateJa, todayIsoDate } from '../lib/dates'
@@ -12,8 +10,6 @@ export function PunchPage() {
   const today = todayIsoDate()
   const [employeeId, setEmployeeId] = useState(profile?.employee_id ?? employees[0]?.id ?? '')
   const [busy, setBusy] = useState(false)
-  const [showCorrection, setShowCorrection] = useState(false)
-  const isAdmin = profile?.role === 'admin'
 
   const openRecord = useMemo(
     () =>
@@ -42,7 +38,7 @@ export function PunchPage() {
       return
     }
     if (!isSecureContext()) {
-      alert('GPS打刻には HTTPS で開いてください（本番URLまたは https://の開発サーバー）')
+      alert('GPS打刻には HTTPS で開いてください')
       return
     }
     if (openRecord) {
@@ -90,6 +86,7 @@ export function PunchPage() {
     <div className="page-stack">
       <section className="panel punch-panel">
         <h2 className="section-title">打刻</h2>
+        <p className="hint">{formatDateJa(today)}</p>
         {!isSecureContext() ? (
           <p className="warn">位置情報のため HTTPS でアクセスしてください。</p>
         ) : null}
@@ -135,13 +132,13 @@ export function PunchPage() {
               settings.break_windows,
               settings.standard_work_minutes_per_day,
             ) > 0
-              ? ` / 残業 ${Math.floor(
+              ? ` / 残業 ${formatMinutesJa(
                   overtimeMinutes(
                     todayRecord,
                     settings.break_windows,
                     settings.standard_work_minutes_per_day,
-                  ) / 60,
-                )}時間`
+                  ),
+                )}`
               : ''}
           </p>
         ) : null}
@@ -175,32 +172,8 @@ export function PunchPage() {
             {busy ? '取得中…' : '退勤'}
           </button>
         </div>
-        <p className="hint small">
-          休憩は会社設定に従い自動控除（{formatDateJa(today)}）
-        </p>
+        <p className="hint small">休憩は会社設定に従い自動控除されます。</p>
       </section>
-
-      <TeamStatusTable employees={employees} records={records} workDate={today} />
-
-      {isAdmin ? (
-        <>
-          <button
-            type="button"
-            className="btn ghost block"
-            onClick={() => setShowCorrection((v) => !v)}
-          >
-            {showCorrection ? '修正画面を閉じる' : '打刻修正（管理者）'}
-          </button>
-          {showCorrection ? (
-            <CorrectionPanel
-              employees={employees}
-              records={records}
-              settings={settings}
-              onChanged={refresh}
-            />
-          ) : null}
-        </>
-      ) : null}
     </div>
   )
 }

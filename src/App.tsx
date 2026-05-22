@@ -2,17 +2,22 @@ import { useState } from 'react'
 import { useAuth } from './auth/AuthContext'
 import { AppDataProvider, useAppData } from './context/AppDataContext'
 import { LoginPage } from './pages/LoginPage'
+import { HomePage } from './pages/HomePage'
 import { PunchPage } from './pages/PunchPage'
 import { ReportsPage } from './pages/ReportsPage'
+import { AnnualReportsPage } from './pages/AnnualReportsPage'
 import { SettingsPage } from './pages/SettingsPage'
 import './App.css'
 
-type Tab = 'punch' | 'reports' | 'settings'
+export type AppMode = 'punch' | 'admin'
+export type Page = 'home' | 'punch' | 'monthly' | 'annual' | 'settings'
 
 function AppShell() {
   const auth = useAuth()
   const { loading, profile, tenantName, refresh } = useAppData()
-  const [tab, setTab] = useState<Tab>('punch')
+  const isAdmin = profile?.role === 'admin'
+  const [appMode, setAppMode] = useState<AppMode>('punch')
+  const [page, setPage] = useState<Page>('home')
 
   if (!auth.session) return <LoginPage />
 
@@ -40,52 +45,88 @@ function AppShell() {
     )
   }
 
+  const selectMode = (mode: AppMode) => {
+    if (mode === 'admin' && !isAdmin) return
+    setAppMode(mode)
+    setPage('home')
+  }
+
+  const goPage = (p: Page) => {
+    if (appMode === 'punch' && (p === 'monthly' || p === 'annual' || p === 'settings')) {
+      return
+    }
+    setPage(p)
+  }
+
+  const punchNav: { id: Page; label: string }[] = [
+    { id: 'home', label: 'TOP' },
+    { id: 'punch', label: '打刻' },
+  ]
+
+  const adminNav: { id: Page; label: string }[] = [
+    { id: 'home', label: 'TOP' },
+    { id: 'monthly', label: '月次' },
+    { id: 'annual', label: '年次' },
+    { id: 'settings', label: '設定' },
+  ]
+
+  const nav = appMode === 'admin' && isAdmin ? adminNav : punchNav
+
   return (
     <div className="app-shell">
       <header className="app-header">
-        <div>
+        <div className="header-main">
+          <p className="app-brand">Synqa</p>
           <h1 className="app-title">{tenantName}</h1>
           <p className="app-sub">
             {profile.display_name}
-            {profile.role === 'admin' ? '（管理者）' : ''}
+            {isAdmin ? ' · 管理者' : ''}
+            {' · '}
+            {appMode === 'admin' ? '管理モード' : '打刻モード'}
           </p>
         </div>
-        <button type="button" className="btn ghost small" onClick={() => void refresh()}>
-          更新
-        </button>
-        <button type="button" className="btn ghost small" onClick={() => void auth.signOut()}>
-          ログアウト
-        </button>
+        <div className="header-actions">
+          <button type="button" className="btn ghost small" onClick={() => void refresh()}>
+            更新
+          </button>
+          <button type="button" className="btn ghost small" onClick={() => void auth.signOut()}>
+            退出
+          </button>
+        </div>
       </header>
 
       <main className="app-main">
-        {tab === 'punch' ? <PunchPage /> : null}
-        {tab === 'reports' ? <ReportsPage /> : null}
-        {tab === 'settings' ? <SettingsPage /> : null}
+        {page === 'home' ? (
+          <HomePage
+            isAdmin={isAdmin}
+            appMode={appMode}
+            onSelectMode={selectMode}
+            onGoPunch={() => {
+              setAppMode('punch')
+              setPage('punch')
+            }}
+          />
+        ) : null}
+        {page === 'punch' ? <PunchPage /> : null}
+        {page === 'monthly' ? <ReportsPage /> : null}
+        {page === 'annual' ? <AnnualReportsPage /> : null}
+        {page === 'settings' ? <SettingsPage /> : null}
       </main>
 
-      <nav className="bottom-nav" aria-label="メニュー">
-        <button
-          type="button"
-          className={tab === 'punch' ? 'active' : ''}
-          onClick={() => setTab('punch')}
-        >
-          打刻
-        </button>
-        <button
-          type="button"
-          className={tab === 'reports' ? 'active' : ''}
-          onClick={() => setTab('reports')}
-        >
-          月次
-        </button>
-        <button
-          type="button"
-          className={tab === 'settings' ? 'active' : ''}
-          onClick={() => setTab('settings')}
-        >
-          設定
-        </button>
+      <nav
+        className={`bottom-nav cols-${nav.length}`}
+        aria-label="メニュー"
+      >
+        {nav.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            className={page === item.id ? 'active' : ''}
+            onClick={() => goPage(item.id)}
+          >
+            {item.label}
+          </button>
+        ))}
       </nav>
     </div>
   )
