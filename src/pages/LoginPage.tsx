@@ -33,10 +33,20 @@ export function LoginPage() {
         <div className="panel auth-panel">
           <BrandHeader />
           <p className="error">
-            Supabase の URL と anon キーを .env に設定してください。ローカル保存のみの運用はできません。
+            Supabase の URL と anon キーが読み込めていません。ローカル保存のみの運用はできません。
           </p>
           <p className="hint small">
-            営業分析アプリとは別の Supabase プロジェクトを新規作成し、マイグレーション SQL を実行してください。
+            <strong>ローカル:</strong> <code>.env</code> に{' '}
+            <code>VITE_SUPABASE_URL</code> と <code>VITE_SUPABASE_ANON_KEY</code>{' '}
+            を設定し、保存後に <code>npm run dev</code> を再起動してください。
+          </p>
+          <p className="hint small">
+            <strong>Vercel 本番:</strong> Project → Settings → Environment Variables
+            に同じ2つを追加し、<strong>Redeploy</strong> してください（.env は Git に含めません）。
+          </p>
+          <p className="hint small">
+            DB は営業分析アプリとは別プロジェクト（rhsslssyfwwpmktlplrc）で、マイグレーション SQL
+            の実行が必要です。
           </p>
         </div>
       </div>

@@ -28,17 +28,21 @@ npm run dev              # https://localhost:5174/
 
 ### 2. push（PowerShell）
 
-`YOUR_USER` をあなたの GitHub ユーザー名に置き換えて実行:
+リポジトリ: [kunieit9971/synqa](https://github.com/kunieit9971/synqa)
 
 ```powershell
 cd c:\Users\kageyama\Desktop\attendance-cloud
 
 $git = "C:\Program Files\Git\cmd\git.exe"
 
-& $git remote add origin https://github.com/YOUR_USER/synqa.git
+# 初回のみ（remote 済みなら不要）
+& $git remote add origin https://github.com/kunieit9971/synqa.git
 & $git branch -M main
 & $git push -u origin main
 ```
+
+**403 が出る場合**: PC に別アカウント（例: `gooner0701mk`）でログインしている。  
+→ Windows「資格情報マネージャー」で `git:https://github.com` を削除するか、[GitHub CLI / PAT](https://github.com/settings/tokens) で **kunieit9971** として再認証してから push。
 
 Git のユーザー名・メールが未設定で push が失敗する場合のみ、**一度だけ**（グローバル）:
 
