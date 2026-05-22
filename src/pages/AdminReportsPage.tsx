@@ -9,7 +9,11 @@ import {
   type ReportGranularity,
 } from '../lib/period'
 import { summarizeEmployeeInRange, summarizeEmployeeMonth } from '../lib/metrics'
-import { downloadPayrollCsv, formatSummaryRow } from '../lib/exportPayroll'
+import {
+  downloadPayrollCsv,
+  formatSummaryRow,
+  overtimeLimitMinutes,
+} from '../lib/exportPayroll'
 import { todayIsoDate } from '../lib/dates'
 
 export function AdminReportsPage() {
@@ -21,6 +25,12 @@ export function AdminReportsPage() {
   )
   const [weekAnchor, setWeekAnchor] = useState(today)
   const [year, setYear] = useState(() => new Date().getFullYear())
+
+  const otLimitMin = overtimeLimitMinutes(settings, granularity)
+  const otLimitHours =
+    granularity === 'year'
+      ? settings.monthly_overtime_limit_hours * 12
+      : settings.monthly_overtime_limit_hours
 
   const period = useMemo(() => {
     if (granularity === 'week') return weekRange(weekAnchor)
@@ -50,13 +60,12 @@ export function AdminReportsPage() {
                   period.start,
                   period.end,
                 )
-          return formatSummaryRow(
-            summary,
-            settings.monthly_overtime_limit_hours * 60,
-          )
+          return formatSummaryRow(summary, otLimitMin)
         }),
-    [employees, records, settings, granularity, focusYm, period, weekAnchor, year],
+    [employees, records, settings, granularity, focusYm, period, otLimitMin],
   )
+
+  const overCount = rows.filter((r) => r.overLimit).length
 
   const granLabel =
     granularity === 'week' ? '週次' : granularity === 'month' ? '月次' : '年次'
@@ -84,38 +93,42 @@ export function AdminReportsPage() {
               period.end,
             ),
       )
-    downloadPayrollCsv(raw, {
-      companyName: tenantName,
-      periodLabel: period.label,
-      granularity: granLabel,
-      overtimeLimitHours: settings.monthly_overtime_limit_hours,
-    })
+    downloadPayrollCsv(
+      raw,
+      {
+        companyName: tenantName,
+        periodLabel: period.label,
+        granularity: granLabel,
+        overtimeLimitHours: otLimitHours,
+      },
+      otLimitMin,
+    )
   }
 
   return (
     <div className="page-stack">
-      <section className="panel">
+      <section className="panel panel-elevated">
         <h2 className="section-title">勤務・残業の確認</h2>
-        <p className="hint">{period.label}</p>
+        <p className="period-label">{period.label}</p>
 
-        <div className="chip-row">
+        <div className="segmented">
           <button
             type="button"
-            className={`chip ${granularity === 'week' ? 'active' : ''}`}
+            className={granularity === 'week' ? 'active' : ''}
             onClick={() => setGranularity('week')}
           >
             週次
           </button>
           <button
             type="button"
-            className={`chip ${granularity === 'month' ? 'active' : ''}`}
+            className={granularity === 'month' ? 'active' : ''}
             onClick={() => setGranularity('month')}
           >
             月次
           </button>
           <button
             type="button"
-            className={`chip ${granularity === 'year' ? 'active' : ''}`}
+            className={granularity === 'year' ? 'active' : ''}
             onClick={() => setGranularity('year')}
           >
             年次
@@ -129,14 +142,14 @@ export function AdminReportsPage() {
               className="chip"
               onClick={() => setWeekAnchor(shiftWeekAnchor(weekAnchor, -1))}
             >
-              前週
+              ← 前週
             </button>
             <button
               type="button"
               className="chip"
               onClick={() => setWeekAnchor(shiftWeekAnchor(weekAnchor, 1))}
             >
-              翌週
+              翌週 →
             </button>
           </div>
         ) : null}
@@ -144,10 +157,10 @@ export function AdminReportsPage() {
         {granularity === 'month' ? (
           <div className="chip-row">
             <button type="button" className="chip" onClick={() => shiftMonth(-1)}>
-              前月
+              ← 前月
             </button>
             <button type="button" className="chip" onClick={() => shiftMonth(1)}>
-              翌月
+              翌月 →
             </button>
           </div>
         ) : null}
@@ -155,49 +168,62 @@ export function AdminReportsPage() {
         {granularity === 'year' ? (
           <div className="chip-row">
             <button type="button" className="chip" onClick={() => setYear((y) => y - 1)}>
-              前年
+              ← 前年
             </button>
             <button type="button" className="chip" onClick={() => setYear((y) => y + 1)}>
-              翌年
+              翌年 →
             </button>
           </div>
         ) : null}
 
+        <div className="limit-banner">
+          <span>残業上限 {otLimitHours}時間</span>
+          {overCount > 0 ? (
+            <span className="over-badge">{overCount}名が超過</span>
+          ) : (
+            <span className="ok-badge">超過なし</span>
+          )}
+        </div>
+
         <button type="button" className="btn primary block" onClick={exportExcel}>
           Excel用に出力（CSV）
         </button>
-        <p className="hint small">
-          CSV を Excel で開いて給与計算に利用できます（UTF-8・実働/残業は分と時間の両方）。
-        </p>
 
-        <div className="table-scroll tall">
-          <table className="data-table">
+        <div className="table-card">
+          <table className="data-table reports-table">
             <thead>
               <tr>
                 <th>担当</th>
-                <th>出勤日数</th>
+                <th>日数</th>
                 <th>実働</th>
                 <th>残業</th>
-                <th>残業上限まで</th>
+                <th>上限まで</th>
+                <th>超過</th>
               </tr>
             </thead>
             <tbody>
               {rows.map((r) => (
-                <tr key={r.employeeId}>
-                  <td>{r.displayName}</td>
+                <tr key={r.employeeId} className={r.overLimit ? 'row-over' : ''}>
+                  <td className="name-cell">{r.displayName}</td>
                   <td>{r.daysWorked}</td>
                   <td>{r.workLabel}</td>
-                  <td className={r.overLimit ? 'warn-cell' : ''}>{r.otLabel}</td>
+                  <td>{r.otLabel}</td>
                   <td>{r.remainLabel}</td>
+                  <td>
+                    {r.overLimit ? (
+                      <span className="over-pill">+{r.overLabel}</span>
+                    ) : (
+                      <span className="muted-dash">—</span>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
         <p className="hint small">
-          残業上限 {settings.monthly_overtime_limit_hours}時間
-          {granularity === 'month' ? ' / 月' : granularity === 'week' ? '（月上限を参照）' : ' / 年次は月上限×12目安'}
-          ・休憩は自動控除済み。
+          超過は残業が上限を超えた時間です。休憩は自動控除済み。
+          {granularity === 'week' ? ' 週次は月上限を目安に表示しています。' : null}
         </p>
       </section>
     </div>
