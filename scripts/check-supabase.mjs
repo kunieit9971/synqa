@@ -8,12 +8,20 @@ const envPath = join(root, '.env')
 function loadEnv() {
   if (!existsSync(envPath)) return {}
   const out = {}
-  for (const line of readFileSync(envPath, 'utf8').split('\n')) {
+  const raw = readFileSync(envPath, 'utf8').replace(/^\uFEFF/, '')
+  for (const line of raw.split(/\r?\n/)) {
     const t = line.trim()
     if (!t || t.startsWith('#')) continue
     const i = t.indexOf('=')
     if (i < 0) continue
-    out[t.slice(0, i).trim()] = t.slice(i + 1).trim()
+    let val = t.slice(i + 1).trim()
+    if (
+      (val.startsWith('"') && val.endsWith('"')) ||
+      (val.startsWith("'") && val.endsWith("'"))
+    ) {
+      val = val.slice(1, -1)
+    }
+    out[t.slice(0, i).trim()] = val
   }
   return out
 }
@@ -22,8 +30,14 @@ const env = loadEnv()
 const url = env.VITE_SUPABASE_URL
 const anon = env.VITE_SUPABASE_ANON_KEY
 
-if (!url || !anon) {
-  console.error('NG: .env に VITE_SUPABASE_URL と VITE_SUPABASE_ANON_KEY を設定してください')
+if (!url) {
+  console.error('NG: .env に VITE_SUPABASE_URL を設定してください')
+  process.exit(1)
+}
+if (!anon) {
+  console.error(
+    'NG: VITE_SUPABASE_ANON_KEY が空です。Supabase API から anon public をコピーし、.env を保存してください。',
+  )
   process.exit(1)
 }
 
