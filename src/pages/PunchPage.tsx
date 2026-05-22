@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { punchIn, punchOut } from '../api/data'
+import { PunchStatusTable } from '../components/PunchStatusTable'
 import { useAppData } from '../context/AppDataContext'
 import { captureGps, formatGps, googleMapsUrl, isSecureContext } from '../lib/geo'
 import { formatClock, formatDateJa, todayIsoDate } from '../lib/dates'
@@ -174,6 +175,8 @@ export function PunchPage() {
         </div>
         <p className="hint small">休憩は会社設定に従い自動控除されます。</p>
       </section>
+
+      <PunchStatusTable employees={employees} records={records} workDate={today} />
     </div>
   )
 }

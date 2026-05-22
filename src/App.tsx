@@ -2,22 +2,21 @@ import { useState } from 'react'
 import { useAuth } from './auth/AuthContext'
 import { AppDataProvider, useAppData } from './context/AppDataContext'
 import { LoginPage } from './pages/LoginPage'
-import { HomePage } from './pages/HomePage'
+import { ModeSelectPage } from './pages/ModeSelectPage'
+import { AdminGatePage } from './pages/AdminGatePage'
 import { PunchPage } from './pages/PunchPage'
-import { ReportsPage } from './pages/ReportsPage'
-import { AnnualReportsPage } from './pages/AnnualReportsPage'
 import { SettingsPage } from './pages/SettingsPage'
+import { AdminReportsPage } from './pages/AdminReportsPage'
 import './App.css'
 
-export type AppMode = 'punch' | 'admin'
-export type Page = 'home' | 'punch' | 'monthly' | 'annual' | 'settings'
+type Screen = 'select' | 'punch' | 'admin-gate' | 'admin'
+type AdminTab = 'settings' | 'reports'
 
 function AppShell() {
   const auth = useAuth()
   const { loading, profile, tenantName, refresh } = useAppData()
-  const isAdmin = profile?.role === 'admin'
-  const [appMode, setAppMode] = useState<AppMode>('punch')
-  const [page, setPage] = useState<Page>('home')
+  const [screen, setScreen] = useState<Screen>('select')
+  const [adminTab, setAdminTab] = useState<AdminTab>('reports')
 
   if (!auth.session) return <LoginPage />
 
@@ -45,45 +44,31 @@ function AppShell() {
     )
   }
 
-  const selectMode = (mode: AppMode) => {
-    if (mode === 'admin' && !isAdmin) return
-    setAppMode(mode)
-    setPage('home')
-  }
+  const backToSelect = () => setScreen('select')
 
-  const goPage = (p: Page) => {
-    if (appMode === 'punch' && (p === 'monthly' || p === 'annual' || p === 'settings')) {
-      return
-    }
-    setPage(p)
-  }
-
-  const punchNav: { id: Page; label: string }[] = [
-    { id: 'home', label: 'TOP' },
-    { id: 'punch', label: '打刻' },
-  ]
-
-  const adminNav: { id: Page; label: string }[] = [
-    { id: 'home', label: 'TOP' },
-    { id: 'monthly', label: '月次' },
-    { id: 'annual', label: '年次' },
-    { id: 'settings', label: '設定' },
-  ]
-
-  const nav = appMode === 'admin' && isAdmin ? adminNav : punchNav
+  const headerTitle =
+    screen === 'select'
+      ? 'メニュー'
+      : screen === 'punch'
+        ? '打刻'
+        : screen === 'admin-gate'
+          ? '管理者'
+          : '管理'
 
   return (
     <div className="app-shell">
       <header className="app-header">
         <div className="header-main">
+          {screen !== 'select' ? (
+            <button type="button" className="btn-back" onClick={backToSelect}>
+              ← メニュー
+            </button>
+          ) : null}
           <p className="app-brand">Synqa</p>
-          <h1 className="app-title">{tenantName}</h1>
-          <p className="app-sub">
-            {profile.display_name}
-            {isAdmin ? ' · 管理者' : ''}
-            {' · '}
-            {appMode === 'admin' ? '管理モード' : '打刻モード'}
-          </p>
+          <h1 className="app-title">
+            {screen === 'select' ? tenantName : headerTitle}
+          </h1>
+          <p className="app-sub">{profile.display_name}</p>
         </div>
         <div className="header-actions">
           <button type="button" className="btn ghost small" onClick={() => void refresh()}>
@@ -96,38 +81,45 @@ function AppShell() {
       </header>
 
       <main className="app-main">
-        {page === 'home' ? (
-          <HomePage
-            isAdmin={isAdmin}
-            appMode={appMode}
-            onSelectMode={selectMode}
-            onGoPunch={() => {
-              setAppMode('punch')
-              setPage('punch')
+        {screen === 'select' ? (
+          <ModeSelectPage
+            onPunch={() => setScreen('punch')}
+            onAdmin={() => setScreen('admin-gate')}
+          />
+        ) : null}
+        {screen === 'punch' ? <PunchPage /> : null}
+        {screen === 'admin-gate' ? (
+          <AdminGatePage
+            onBack={backToSelect}
+            onUnlock={() => {
+              setAdminTab('reports')
+              setScreen('admin')
             }}
           />
         ) : null}
-        {page === 'punch' ? <PunchPage /> : null}
-        {page === 'monthly' ? <ReportsPage /> : null}
-        {page === 'annual' ? <AnnualReportsPage /> : null}
-        {page === 'settings' ? <SettingsPage /> : null}
+        {screen === 'admin' ? (
+          adminTab === 'settings' ? <SettingsPage /> : <AdminReportsPage />
+        ) : null}
       </main>
 
-      <nav
-        className={`bottom-nav cols-${nav.length}`}
-        aria-label="メニュー"
-      >
-        {nav.map((item) => (
+      {screen === 'admin' ? (
+        <nav className="bottom-nav cols-2" aria-label="管理メニュー">
           <button
-            key={item.id}
             type="button"
-            className={page === item.id ? 'active' : ''}
-            onClick={() => goPage(item.id)}
+            className={adminTab === 'reports' ? 'active' : ''}
+            onClick={() => setAdminTab('reports')}
           >
-            {item.label}
+            確認
           </button>
-        ))}
-      </nav>
+          <button
+            type="button"
+            className={adminTab === 'settings' ? 'active' : ''}
+            onClick={() => setAdminTab('settings')}
+          >
+            設定
+          </button>
+        </nav>
+      ) : null}
     </div>
   )
 }

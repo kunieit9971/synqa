@@ -66,18 +66,14 @@ export type EmployeeMonthSummary = {
   daysWorked: number
 }
 
-export function summarizeEmployeeMonth(
+export function summarizeEmployeeInRange(
   employeeId: string,
   displayName: string,
   records: AttendanceRecord[],
   settings: TenantSettings,
-  focusYm: string,
+  start: string,
+  end: string,
 ): EmployeeMonthSummary {
-  const { start, end } = payPeriodRange(
-    focusYm,
-    settings.period_mode,
-    settings.period_anchor_day,
-  )
   const windows = settings.break_windows
   const std = settings.standard_work_minutes_per_day
   let work = 0
@@ -99,6 +95,28 @@ export function summarizeEmployeeMonth(
   }
 }
 
+export function summarizeEmployeeMonth(
+  employeeId: string,
+  displayName: string,
+  records: AttendanceRecord[],
+  settings: TenantSettings,
+  focusYm: string,
+): EmployeeMonthSummary {
+  const { start, end } = payPeriodRange(
+    focusYm,
+    settings.period_mode,
+    settings.period_anchor_day,
+  )
+  return summarizeEmployeeInRange(
+    employeeId,
+    displayName,
+    records,
+    settings,
+    start,
+    end,
+  )
+}
+
 export type TodayStatus = 'in' | 'out' | 'none'
 
 export function summarizeEmployeeYear(
@@ -108,23 +126,14 @@ export function summarizeEmployeeYear(
   settings: TenantSettings,
   year: number,
 ): EmployeeMonthSummary {
-  let work = 0
-  let ot = 0
-  let days = 0
-  for (let m = 1; m <= 12; m++) {
-    const ym = `${year}-${String(m).padStart(2, '0')}`
-    const month = summarizeEmployeeMonth(
-      employeeId,
-      displayName,
-      records,
-      settings,
-      ym,
-    )
-    work += month.workMinutes
-    ot += month.overtimeMinutes
-    days += month.daysWorked
-  }
-  return { employeeId, displayName, workMinutes: work, overtimeMinutes: ot, daysWorked: days }
+  return summarizeEmployeeInRange(
+    employeeId,
+    displayName,
+    records,
+    settings,
+    `${year}-01-01`,
+    `${year}-12-31`,
+  )
 }
 
 export function resolveTodayStatus(

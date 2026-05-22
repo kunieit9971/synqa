@@ -672,3 +672,81 @@ textarea.input {
   border-width: 2px;
   border-color: color-mix(in srgb, var(--accent) 20%, var(--border));
 }
+
+.punch-status-panel {
+  margin-top: 0;
+}
+
+.mode-select-page {
+  padding-top: 0.25rem;
+}
+
+.mode-select-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.mode-select-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  padding: 1.25rem 1rem;
+  border-radius: 14px;
+  border: 2px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+  font: inherit;
+  width: 100%;
+}
+
+.mode-select-card.punch {
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+  background: color-mix(in srgb, var(--accent) 5%, white);
+}
+
+.mode-select-card.admin {
+  border-color: color-mix(in srgb, var(--accent-teal) 35%, var(--border));
+  background: color-mix(in srgb, var(--accent-teal) 6%, white);
+}
+
+.mode-select-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.mode-select-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin-top: 0.35rem;
+}
+
+.mode-select-desc {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-top: 0.2rem;
+}
+
+.btn-back {
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--accent);
+  background: none;
+  border: none;
+  padding: 0 0 0.35rem;
+  cursor: pointer;
+}
+
+.table-scroll.tall {
+  max-height: 360px;
+}
+
+.app-main {
+  padding-bottom: 1rem;
+}
+
+.app-shell:has(.bottom-nav) .app-main {
+  padding-bottom: 5rem;
+}
